@@ -1,0 +1,675 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <title>PiScrable - Crypto Word Game</title>
+
+    <!-- Pi SDK -->
+    <script src="https://sdk.minepi.com/pi-sdk.js"></script>
+
+    <link href="https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Rajdhani:wght@400;500;700&display=swap" rel="stylesheet">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Rajdhani', sans-serif;
+            background: linear-gradient(135deg, #0a0a1a 0%, #1a1a3a 50%, #0a0a2a 100%);
+            min-height: 100vh;
+            color: #fff;
+            overflow-x: hidden;
+        }
+
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            padding: 10px;
+        }
+
+        /* Auth Banner */
+        .auth-banner {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,165,0,0.1) 100%);
+            border: 1px solid rgba(255,215,0,0.3);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+            text-align: center;
+            display: none;
+        }
+
+        .auth-banner.show {
+            display: block;
+        }
+
+        .auth-banner.authenticated {
+            background: linear-gradient(135deg, rgba(0,255,150,0.2) 0%, rgba(0,200,100,0.1) 100%);
+            border-color: rgba(0,255,150,0.3);
+        }
+
+        .user-info {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 10px;
+        }
+
+        .user-avatar {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: bold;
+            color: #000;
+        }
+
+        .pi-balance {
+            font-family: 'Orbitron', sans-serif;
+            color: #FFD700;
+        }
+
+        /* Header */
+        .header {
+            text-align: center;
+            padding: 15px 0;
+            background: linear-gradient(180deg, rgba(255,215,0,0.1) 0%, transparent 100%);
+            border-bottom: 2px solid rgba(255,215,0,0.3);
+            margin-bottom: 15px;
+        }
+
+        .logo {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2.5rem;
+            font-weight: 900;
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 50%, #FFD700 100%);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+            background-clip: text;
+            text-shadow: 0 0 30px rgba(255,215,0,0.5);
+            animation: glow 2s ease-in-out infinite alternate;
+        }
+
+        @keyframes glow {
+            from { filter: drop-shadow(0 0 5px rgba(255,215,0,0.5)); }
+            to { filter: drop-shadow(0 0 20px rgba(255,215,0,0.8)); }
+        }
+
+        .pi-symbol {
+            color: #FFD700;
+            font-size: 2.8rem;
+        }
+
+        .tagline {
+            font-size: 0.9rem;
+            color: #888;
+            margin-top: 5px;
+        }
+
+        /* Stats Bar */
+        .stats-bar {
+            display: grid;
+            grid-template-columns: repeat(4, 1fr);
+            gap: 10px;
+            margin-bottom: 15px;
+        }
+
+        .stat-box {
+            background: rgba(255,255,255,0.05);
+            border: 1px solid rgba(255,215,0,0.2);
+            border-radius: 10px;
+            padding: 10px;
+            text-align: center;
+        }
+
+        .stat-value {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 1.5rem;
+            color: #FFD700;
+            font-weight: 700;
+        }
+
+        .stat-label {
+            font-size: 0.7rem;
+            color: #888;
+            text-transform: uppercase;
+        }
+
+        .pi-fragments {
+            background: linear-gradient(135deg, rgba(255,215,0,0.2) 0%, rgba(255,165,0,0.1) 100%);
+            border-color: rgba(255,215,0,0.5);
+        }
+
+        /* Level Selector */
+        .level-selector {
+            display: flex;
+            justify-content: center;
+            gap: 10px;
+            margin-bottom: 15px;
+            flex-wrap: wrap;
+        }
+
+        .level-btn {
+            padding: 8px 20px;
+            border: 2px solid rgba(255,255,255,0.2);
+            background: rgba(255,255,255,0.05);
+            color: #fff;
+            border-radius: 20px;
+            cursor: pointer;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 600;
+            transition: all 0.3s ease;
+        }
+
+        .level-btn:hover {
+            border-color: rgba(255,215,0,0.5);
+            background: rgba(255,215,0,0.1);
+        }
+
+        .level-btn.active {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+            border-color: #FFD700;
+        }
+
+        .level-btn.premium {
+            background: linear-gradient(135deg, rgba(138,43,226,0.3) 0%, rgba(75,0,130,0.3) 100%);
+            border-color: rgba(138,43,226,0.5);
+        }
+
+        .level-btn.premium::after {
+            content: ' 👑';
+        }
+
+        .level-btn.premium.unlocked {
+            background: linear-gradient(135deg, #9932CC 0%, #8B008B 100%);
+            color: #fff;
+        }
+
+        /* Game Board */
+        .game-board {
+            background: rgba(0,0,0,0.3);
+            border-radius: 15px;
+            padding: 15px;
+            margin-bottom: 15px;
+            border: 1px solid rgba(255,215,0,0.2);
+        }
+
+        .board-grid {
+            display: grid;
+            grid-template-columns: repeat(11, 1fr);
+            gap: 3px;
+            margin-bottom: 15px;
+        }
+
+        .cell {
+            aspect-ratio: 1;
+            background: rgba(255,255,255,0.05);
+            border-radius: 4px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 0.9rem;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            position: relative;
+        }
+
+        .cell:hover {
+            background: rgba(255,215,0,0.2);
+            transform: scale(1.05);
+        }
+
+        .cell.bonus-2l { background: rgba(0,150,255,0.3); border: 1px solid rgba(0,150,255,0.5); }
+        .cell.bonus-3l { background: rgba(0,255,150,0.3); border: 1px solid rgba(0,255,150,0.5); }
+        .cell.bonus-2w { background: rgba(255,100,100,0.3); border: 1px solid rgba(255,100,100,0.5); }
+        .cell.bonus-3w { background: rgba(255,215,0,0.3); border: 1px solid rgba(255,215,0,0.5); }
+        .cell.center { background: linear-gradient(135deg, rgba(255,215,0,0.4) 0%, rgba(255,165,0,0.3) 100%); border: 2px solid #FFD700; }
+        .cell.filled { background: linear-gradient(135deg, #2a2a4a 0%, #1a1a3a 100%); border: 1px solid rgba(255,215,0,0.5); color: #FFD700; }
+
+        /* Player Rack */
+        .rack-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .rack-title {
+            font-size: 0.8rem;
+            color: #888;
+            margin-bottom: 10px;
+            text-transform: uppercase;
+        }
+
+        .letter-rack {
+            display: flex;
+            justify-content: center;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .tile {
+            width: 45px;
+            height: 50px;
+            background: linear-gradient(180deg, #f5e6c8 0%, #d4c4a8 100%);
+            border-radius: 6px;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            font-family: 'Orbitron', sans-serif;
+            font-weight: 700;
+            font-size: 1.3rem;
+            color: #1a1a2e;
+            cursor: grab;
+            box-shadow: 0 3px 6px rgba(0,0,0,0.3);
+            transition: all 0.2s ease;
+            user-select: none;
+        }
+
+        .tile:hover {
+            transform: translateY(-5px);
+            box-shadow: 0 8px 15px rgba(255,215,0,0.3);
+        }
+
+        .tile.selected {
+            transform: translateY(-8px);
+            box-shadow: 0 10px 20px rgba(255,215,0,0.5);
+            border: 2px solid #FFD700;
+        }
+
+        .tile .tile-points {
+            font-size: 0.6rem;
+            color: #666;
+        }
+
+        /* Word Input */
+        .word-input-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .current-word {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 5px;
+            min-height: 50px;
+            background: rgba(0,0,0,0.3);
+            border-radius: 8px;
+            padding: 10px;
+            margin-bottom: 10px;
+        }
+
+        .current-word .tile {
+            width: 40px;
+            height: 45px;
+            font-size: 1.1rem;
+        }
+
+        .word-score {
+            text-align: center;
+            font-family: 'Orbitron', sans-serif;
+            color: #FFD700;
+            font-size: 1.2rem;
+            margin-bottom: 10px;
+        }
+
+        /* Buttons */
+        .btn-group {
+            display: flex;
+            gap: 10px;
+            justify-content: center;
+            flex-wrap: wrap;
+        }
+
+        .btn {
+            padding: 12px 25px;
+            border: none;
+            border-radius: 25px;
+            font-family: 'Rajdhani', sans-serif;
+            font-weight: 700;
+            font-size: 1rem;
+            cursor: pointer;
+            transition: all 0.3s ease;
+            text-transform: uppercase;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #FFD700 0%, #FFA500 100%);
+            color: #000;
+        }
+
+        .btn-primary:hover {
+            transform: scale(1.05);
+            box-shadow: 0 5px 20px rgba(255,215,0,0.4);
+        }
+
+        .btn-secondary {
+            background: rgba(255,255,255,0.1);
+            color: #fff;
+            border: 1px solid rgba(255,255,255,0.2);
+        }
+
+        .btn-pi {
+            background: linear-gradient(135deg, #7B68EE 0%, #9932CC 100%);
+            color: #fff;
+        }
+
+        /* Dictionary */
+        .dictionary-section {
+            background: rgba(255,255,255,0.05);
+            border-radius: 10px;
+            padding: 15px;
+            margin-bottom: 15px;
+        }
+
+        .dict-title {
+            font-size: 1rem;
+            color: #FFD700;
+            margin-bottom: 10px;
+        }
+
+        .word-list {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+
+        .crypto-word {
+            background: rgba(255,215,0,0.1);
+            border: 1px solid rgba(255,215,0,0.3);
+            padding: 5px 12px;
+            border-radius: 15px;
+            font-size: 0.8rem;
+            color: #FFD700;
+        }
+
+        .crypto-word.used {
+            opacity: 0.4;
+            text-decoration: line-through;
+        }
+
+        /* Premium Modal */
+        .modal-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.8);
+            z-index: 1000;
+            align-items: center;
+            justify-content: center;
+        }
+
+        .modal-overlay.active {
+            display: flex;
+        }
+
+        .modal {
+            background: linear-gradient(135deg, #1a1a3a 0%, #2a2a5a 100%);
+            border-radius: 20px;
+            padding: 30px;
+            max-width: 400px;
+            width: 90%;
+            border: 2px solid rgba(255,215,0,0.3);
+            text-align: center;
+        }
+
+        .modal h2 {
+            font-family: 'Orbitron', sans-serif;
+            color: #FFD700;
+            margin-bottom: 15px;
+        }
+
+        .premium-features {
+            text-align: left;
+            margin: 20px 0;
+            list-style: none;
+        }
+
+        .premium-features li {
+            padding: 8px 0;
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+            color: #ccc;
+        }
+
+        .premium-features li::before {
+            content: '✨ ';
+        }
+
+        .pi-price {
+            font-family: 'Orbitron', sans-serif;
+            font-size: 2rem;
+            color: #FFD700;
+            margin: 20px 0;
+        }
+
+        .pi-price span {
+            font-size: 1rem;
+            color: #888;
+        }
+
+        /* Toast */
+        .toast {
+            position: fixed;
+            bottom: 20px;
+            left: 50%;
+            transform: translateX(-50%) translateY(100px);
+            background: linear-gradient(135deg, #1a1a3a 0%, #2a2a5a 100%);
+            border: 1px solid rgba(255,215,0,0.5);
+            padding: 15px 30px;
+            border-radius: 10px;
+            color: #fff;
+            font-weight: 600;
+            z-index: 1001;
+            transition: transform 0.3s ease;
+        }
+
+        .toast.show { transform: translateX(-50%) translateY(0); }
+        .toast.success { border-color: rgba(0,255,150,0.5); background: linear-gradient(135deg, #0a2a1a 0%, #1a3a2a 100%); }
+        .toast.error { border-color: rgba(255,100,100,0.5); background: linear-gradient(135deg, #2a1a1a 0%, #3a2a2a 100%); }
+
+        /* Loading */
+        .loading-overlay {
+            display: none;
+            position: fixed;
+            top: 0;
+            left: 0;
+            right: 0;
+            bottom: 0;
+            background: rgba(0,0,0,0.9);
+            z-index: 2000;
+            align-items: center;
+            justify-content: center;
+            flex-direction: column;
+        }
+
+        .loading-overlay.active {
+            display: flex;
+        }
+
+        .spinner {
+            width: 60px;
+            height: 60px;
+            border: 4px solid rgba(255,215,0,0.2);
+            border-top-color: #FFD700;
+            border-radius: 50%;
+            animation: spin 1s linear infinite;
+        }
+
+        @keyframes spin {
+            to { transform: rotate(360deg); }
+        }
+
+        .loading-text {
+            margin-top: 20px;
+            color: #FFD700;
+            font-family: 'Orbitron', sans-serif;
+        }
+
+        /* Responsive */
+        @media (max-width: 500px) {
+            .logo { font-size: 2rem; }
+            .stats-bar { grid-template-columns: repeat(2, 1fr); }
+            .cell { font-size: 0.7rem; }
+            .tile { width: 38px; height: 42px; font-size: 1.1rem; }
+            .level-btn { padding: 6px 12px; font-size: 0.9rem; }
+        }
+    </style>
+</head>
+<body>
+    <!-- Loading Overlay -->
+    <div class="loading-overlay" id="loadingOverlay">
+        <div class="spinner"></div>
+        <div class="loading-text">Connexion à Pi Network...</div>
+    </div>
+
+    <div class="container">
+        <!-- Auth Banner -->
+        <div class="auth-banner show" id="authBanner">
+            <div id="authContent">
+                <p>Connectez-vous avec Pi pour sauvegarder vos gains!</p>
+                <button class="btn btn-pi" id="loginBtn" onclick="authenticateWithPi()">
+                    🔐 Connexion avec Pi
+                </button>
+            </div>
+        </div>
+
+        <!-- Header -->
+        <div class="header">
+            <div class="logo"><span class="pi-symbol">π</span> PiScrable</div>
+            <div class="tagline">Le jeu de mots crypto qui rapporte des Pi 🚀</div>
+        </div>
+
+        <!-- Stats Bar -->
+        <div class="stats-bar">
+            <div class="stat-box">
+                <div class="stat-value" id="score">0</div>
+                <div class="stat-label">Score</div>
+            </div>
+            <div class="stat-box pi-fragments">
+                <div class="stat-value" id="fragments">0.000</div>
+                <div class="stat-label">π Fragments</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="words">0</div>
+                <div class="stat-label">Mots</div>
+            </div>
+            <div class="stat-box">
+                <div class="stat-value" id="streak">0</div>
+                <div class="stat-label">Série</div>
+            </div>
+        </div>
+
+        <!-- Level Selector -->
+        <div class="level-selector">
+            <button class="level-btn active" data-level="1">Débutant</button>
+            <button class="level-btn" data-level="2">Intermédiaire</button>
+            <button class="level-btn" data-level="3">Expert</button>
+            <button class="level-btn premium" data-level="4" id="legendaryBtn">Légendaire</button>
+        </div>
+
+        <!-- Game Board -->
+        <div class="game-board">
+            <div class="board-grid" id="board"></div>
+        </div>
+
+        <!-- Word Input -->
+        <div class="word-input-section">
+            <div class="current-word" id="currentWord">
+                <span style="color: #666; font-size: 0.9rem;">Sélectionnez des lettres...</span>
+            </div>
+            <div class="word-score">Score potentiel: <span id="potentialScore">0</span> pts</div>
+            <div class="btn-group">
+                <button class="btn btn-primary" id="submitWord">✓ Valider</button>
+                <button class="btn btn-secondary" id="clearWord">✗ Effacer</button>
+                <button class="btn btn-secondary" id="shuffleTiles">🔄 Mélanger</button>
+            </div>
+        </div>
+
+        <!-- Player Rack -->
+        <div class="rack-section">
+            <div class="rack-title">Vos Lettres</div>
+            <div class="letter-rack" id="rack"></div>
+        </div>
+
+        <!-- Dictionary -->
+        <div class="dictionary-section">
+            <div class="dict-title">📚 Vocabulaire Crypto (Niveau <span id="levelName">Débutant</span>)</div>
+            <div class="word-list" id="wordList"></div>
+        </div>
+
+        <!-- Withdraw Section (only visible when authenticated) -->
+        <div class="rack-section" id="withdrawSection" style="display: none;">
+            <div class="rack-title">💰 Retirer vos Pi Fragments</div>
+            <p style="color: #888; margin-bottom: 10px;">Minimum: 1.0 π pour retrait</p>
+            <button class="btn btn-pi" onclick="withdrawPi()" id="withdrawBtn" disabled>
+                Retirer <span id="withdrawAmount">0.000</span> π
+            </button>
+        </div>
+    </div>
+
+    <!-- Premium Modal -->
+    <div class="modal-overlay" id="premiumModal">
+        <div class="modal">
+            <h2>👑 Mode Légendaire</h2>
+            <p>Débloquez des fonctionnalités exclusives!</p>
+            <ul class="premium-features">
+                <li>Vocabulaire DeFi & NFT avancé</li>
+                <li>Multiplicateur x3 sur les Pi Fragments</li>
+                <li>Bonus quotidiens exclusifs</li>
+                <li>Classement mondial</li>
+                <li>Skins de plateau personnalisés</li>
+            </ul>
+            <div class="pi-price">5 π <span>/ mois</span></div>
+            <div class="btn-group">
+                <button class="btn btn-pi" id="buyPremiumBtn" onclick="purchasePremium()">
+                    Payer avec Pi
+                </button>
+                <button class="btn btn-secondary" onclick="closeModal()">Plus tard</button>
+            </div>
+        </div>
+    </div>
+
+    <!-- Toast -->
+    <div class="toast" id="toast"></div>
+
+    <script>
+        // ============================================
+        // PI NETWORK SDK INTEGRATION
+        // ============================================
+
+        // Configuration - REMPLACEZ PAR VOS VRAIES VALEURS
+        const PI_APP_ID = 'votre-app-id'; // Obtenez-name: Jekyll site CI
+
+on:
+  push:
+    branches: [ "main" ]
+  pull_request:
+    branches: [ "main" ]
+
+jobs:
+  build:
+
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v4
+    - name: Build the site in the jekyll/builder container
+      run: |
+        docker run \
+        -v ${{ github.workspace }}:/srv/jekyll -v ${{ github.workspace }}/_site:/srv/jekyll/_site \
+        jekyll/builder:latest /bin/bash -c "chmod -R 777 /srv/jekyll && jekyll build --future"

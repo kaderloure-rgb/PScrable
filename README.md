@@ -1,4 +1,14 @@
-PScrable
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>PScrable</title>
+</head>
+<body>
+  <h1>Bienvenue sur PScrable</h1>
+  <p>Jeu de mots crypto en style Scrabble</p>
+</body>
+</html>PScrable
 **Jeu de mots crypto style Scrabble**  
 Formez des mots issus du vocabulaire blockchain pour gagner des fragments de Pi.  
 Accessible via Pi Browser, avec plusieurs niveaux et un mode premium.

@@ -1,6 +1,67 @@
 <!DOCTYPE html>
 <html lang="fr">
 <head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>PScrable - Crypto Game</title>
+<style>
+  body { font-family: Arial, sans-serif; margin: 20px; background: #f4f4f9; color: #333; }
+  h1 { text-align: center; color: #5a2a83; }
+  #board { display: flex; flex-wrap: wrap; max-width: 300px; margin: 20px auto; }
+  .tile { width: 60px; height: 60px; border: 1px solid #aaa; display: flex; justify-content: center; align-items: center; font-size: 18px; margin: 2px; background: #fff; cursor: pointer; }
+  #wordInput { width: 80%; padding: 10px; font-size: 16px; margin: 10px auto; display: block; }
+  #submitBtn { padding: 10px 20px; font-size: 16px; background: #5a2a83; color: #fff; border: none; cursor: pointer; }
+  #message { text-align: center; font-weight: bold; margin-top: 15px; }
+  #score { text-align: center; margin-top: 10px; font-size: 18px; }
+</style>
+</head>
+<body>
+
+<h1>PScrable - Crypto Game</h1>
+
+<div id="board">
+  <div class="tile">B</div>
+  <div class="tile">L</div>
+  <div class="tile">O</div>
+  <div class="tile">C</div>
+  <div class="tile">K</div>
+  <div class="tile">C</div>
+  <div class="tile">H</div>
+  <div class="tile">A</div>
+  <div class="tile">I</div>
+  <div class="tile">N</div>
+</div>
+
+<input type="text" id="wordInput" placeholder="Entrez un mot crypto">
+<button id="submitBtn">Valider</button>
+
+<div id="message"></div>
+<div id="score">Score : 0</div>
+
+<script>
+const validWords = ["BLOCK", "CHAIN", "TOKEN", "MINER", "NODE", "WALLET", "SMART", "CONTRACT", "LEDGER", "CRYPTO"];
+let score = 0;
+
+document.getElementById("submitBtn").addEventListener("click", function() {
+  const input = document.getElementById("wordInput").value.toUpperCase().trim();
+  const messageEl = document.getElementById("message");
+  
+  if(validWords.includes(input)) {
+    score += input.length; 
+    messageEl.textContent = "Bravo ! Mot correct : " + input;
+  } else {
+    messageEl.textContent = "Mot incorrect, essayez encore.";
+  }
+  
+  document.getElementById("score").textContent = "Score : " + score;
+  document.getElementById("wordInput").value = "";
+});
+</script>
+
+</body>
+</html><!DOCTYPE html>
+<html lang="fr">
+<head>
   <meta charset="UTF-8">
   <title>PScrable</title>
 </head>

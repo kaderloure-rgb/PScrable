@@ -1,0 +1,23 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+  <meta charset="UTF-8">
+  <title>PScrable</title>
+</head>
+<body>
+  <h1>PScrable - Jeu Scrabble Crypto</h1>
+  <p>Formez des mots du vocabulaire blockchain pour gagner des fragments de Pi !</p>
+  <input type="text" id="word" placeholder="Écrire un mot">
+  <button onclick="checkWord()">Valider</button>
+  <p id="result"></p>
+
+  <script>
+    function checkWord() {
+      const word = document.getElementById("word").value.trim().toLowerCase();
+      const validWords = ["blockchain", "wallet", "node", "miner", "pi", "token"];
+      document.getElementById("result").textContent = 
+        validWords.includes(word) ? "Bravo ! ✅" : "Mot incorrect ❌";
+    }
+  </script>
+</body>
+</html>
